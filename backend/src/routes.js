@@ -20,6 +20,7 @@ routes.get('/user/:userId' , UserController.getUserById);
 
 //events
 routes.post('/event/create' ,upload.single("thumbnail") , EventController.createEvent);
+routes.get('/event/:event_id' , EventController.getEventById);
 
 
 module.exports = routes;

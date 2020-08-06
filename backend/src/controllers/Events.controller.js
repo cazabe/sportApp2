@@ -17,7 +17,7 @@ module.exports = {
         const event = await Events.create({
           title,
           description,
-          price:parseFloat(price),
+          price: parseFloat(price),
           thumbnail: filename,
           date: Date.now(),
           user: user_id,
@@ -28,6 +28,22 @@ module.exports = {
       return res
         .status(400)
         .json({ message: "Problem saving event, all fields must be fill" });
+    }
+  },
+
+  async getEventById(req, res) {
+    const { event_id } = req.params;
+
+    try {
+      const event = await Events.findById(event_id);
+
+      if (event) {
+        return res.json(event);
+      } else {
+        res.status(400).json({ message: "There is not event" });
+      }
+    } catch (error) {
+      res.status(400).json({ message: "There is not event" });
     }
   },
 };
