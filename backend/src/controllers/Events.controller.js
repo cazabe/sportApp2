@@ -4,7 +4,7 @@ const User = require("../models/User.model");
 
 module.exports = {
   async createEvent(req, res) {
-    const { title, description, price, date } = req.body;
+    const { title, description, price, date , sport } = req.body;
     const { user_id } = req.headers;
     const { filename } = req.file;
 
@@ -19,6 +19,7 @@ module.exports = {
           description,
           price: parseFloat(price),
           thumbnail: filename,
+          sport,
           date: Date.now(),
           user: user_id,
         });
@@ -31,19 +32,14 @@ module.exports = {
     }
   },
 
-  async getEventById(req, res) {
-    const { event_id } = req.params;
 
+  async deleteEvents(req , res){
+    const {eventId} = req.params
     try {
-      const event = await Events.findById(event_id);
-
-      if (event) {
-        return res.json(event);
-      } else {
-        res.status(400).json({ message: "There is not event" });
-      }
+      await Events.findByIdAndDelete(eventId)
+      res.json({message : "Event deleted"});
     } catch (error) {
-      res.status(400).json({ message: "There is not event" });
+      res.status(400).json({ message: "There is not event with that id" });
     }
-  },
+  }
 };
