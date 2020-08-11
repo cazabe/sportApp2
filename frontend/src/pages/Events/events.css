@@ -1,0 +1,27 @@
+label#tumbnail{
+    margin-bottom: 20px;
+    border: 1px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+}
+
+label#tumbnail input{
+    display: none;
+}
+
+label#tumbnail.has-thumbnail{
+    border: 0;
+}
+
+label#tumbnail.has-thumbnail img{
+    display: none;
+}
+
+.event-validation{
+    margin-top: 12px;
+}
