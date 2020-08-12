@@ -4,20 +4,21 @@ import { Button, Form, FormGroup, Label, Input, Container, Alert } from "reactst
 import camaraIcon from "../../Assets/camera.png";
 import "./events.css";
 
-const EventsPage = () => {
+const EventsPage = ({history}) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
   const [sport, setSport] = useState("");
   const [date, setDate] = useState("");
-  const [errorMessage , setErrorMessage] = useState(false);
+  const [error , setError] = useState(false);
+  const[success , setSuccess] = useState(false);
 
   const preview = useMemo(() => {
     return thumbnail ? URL.createObjectURL(thumbnail) : null;
   }, [thumbnail]);
 
-  console.log(title, description, price, sport, date);
+  // console.log(title, description, price, sport, date);
 
   const submitHandler = async (event) => {
     event.preventDefault();
@@ -42,10 +43,14 @@ const EventsPage = () => {
         thumbnail !== null
       ) {
         await api.post("/event/create", eventData, { headers: { user_id } });
-      }else{
-        setErrorMessage(true)
+        setSuccess(true)
         setTimeout(()=>{
-            setErrorMessage(false);
+          setSuccess(false)
+        },2000);
+      }else{
+        setError(true)
+        setTimeout(()=>{
+            setError(false);
         },2000)
         console.log("Missing required message");
       }
@@ -131,11 +136,18 @@ const EventsPage = () => {
             onChange={(event) => setDate(event.target.value)}
           />
         </FormGroup>
-
-        <Button type="submit">Create event</Button>
+      <FormGroup>
+        <Button type="submit" className="submit-btn">Create event</Button>
+        </FormGroup>
+        <FormGroup>
+        <Button className="secondary-btn" onClick={()=> history.push("/")}>dashboard</Button>
+        </FormGroup>
       </Form>
-      {errorMessage ? (
+      {error ? (
           <Alert className="event-validation" color="danger">Missing required information</Alert>
+      ):""}
+      {success ? (
+          <Alert className="event-validation" color="success">Event created successfully</Alert>
       ):""}
     </Container>
   );

@@ -7,7 +7,9 @@ function App() {
   return (
     <Container>
       <h1>Sports APP</h1>
+      <div className="content">
       <Routes/>
+      </div>
     </Container>
   );
 }
