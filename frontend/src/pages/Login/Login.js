@@ -37,7 +37,7 @@ const Login = ({ history }) => {
         },2000)
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error , the server return an error" , error);
     }
   };
 

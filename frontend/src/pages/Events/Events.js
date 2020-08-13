@@ -1,22 +1,40 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo} from "react";
 import api from "../../services/api";
-import { Button, Form, FormGroup, Label, Input, Container, Alert } from "reactstrap";
+import {
+  Button,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Container,
+  Alert,
+  ButtonDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+} from "reactstrap";
 import camaraIcon from "../../Assets/camera.png";
 import "./events.css";
 
-const EventsPage = ({history}) => {
+const EventsPage = ({ history }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [thumbnail, setThumbnail] = useState(null);
-  const [sport, setSport] = useState("");
+  const [sport, setSport] = useState("Sport");
   const [date, setDate] = useState("");
-  const [error , setError] = useState(false);
-  const[success , setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const [dropdownOpen, setOpen] = useState(false);
+
+  const toggle = () => setOpen(!dropdownOpen);
 
   const preview = useMemo(() => {
     return thumbnail ? URL.createObjectURL(thumbnail) : null;
   }, [thumbnail]);
+
+  
 
   // console.log(title, description, price, sport, date);
 
@@ -38,26 +56,32 @@ const EventsPage = ({history}) => {
         title !== "" &&
         description !== "" &&
         price !== "" &&
-        sport !== "" &&
+        sport !== "Sport" &&
         date !== "" &&
         thumbnail !== null
       ) {
         await api.post("/event/create", eventData, { headers: { user_id } });
-        setSuccess(true)
-        setTimeout(()=>{
-          setSuccess(false)
-        },2000);
-      }else{
-        setError(true)
-        setTimeout(()=>{
-            setError(false);
-        },2000)
+        setSuccess(true);
+        setTimeout(() => {
+          setSuccess(false);
+        }, 2000);
+      } else {
+        setError(true);
+        setTimeout(() => {
+          setError(false);
+        }, 2000);
         console.log("Missing required message");
       }
     } catch (error) {
       console.log(error.message);
     }
   };
+
+  const sportEventHandler = (sport)=>{
+    setSport(sport);
+  }
+
+  console.log(sport);
 
   return (
     <Container>
@@ -80,17 +104,6 @@ const EventsPage = ({history}) => {
               alt="upload icon file"
             />
           </Label>
-        </FormGroup>
-
-        <FormGroup>
-          <Label>Sport:</Label>
-          <Input
-            id="sport"
-            type="text"
-            placeholder="Enter sport name"
-            value={sport}
-            onChange={(event) => setSport(event.target.value)}
-          />
         </FormGroup>
 
         <FormGroup>
@@ -136,19 +149,44 @@ const EventsPage = ({history}) => {
             onChange={(event) => setDate(event.target.value)}
           />
         </FormGroup>
-      <FormGroup>
-        <Button type="submit" className="submit-btn">Create event</Button>
+        
+        <FormGroup>
+          <label>Sports:</label>
+          <ButtonDropdown isOpen={dropdownOpen} toggle={toggle} >
+            <DropdownToggle caret>{sport}</DropdownToggle>
+            <DropdownMenu>
+              <DropdownItem onClick={()=>sportEventHandler('running')}>Running</DropdownItem>
+              <DropdownItem onClick={()=>sportEventHandler('cycling')}>Cycling</DropdownItem>
+              <DropdownItem onClick={()=>sportEventHandler('swiming')}>Swiming</DropdownItem>
+            </DropdownMenu>
+          </ButtonDropdown>
+        </FormGroup>
+
+        <FormGroup>
+          <Button type="submit" className="submit-btn">
+            Create event
+          </Button>
         </FormGroup>
         <FormGroup>
-        <Button className="secondary-btn" onClick={()=> history.push("/")}>dashboard</Button>
+          <Button className="secondary-btn" onClick={() => history.push("/")}>
+            dashboard
+          </Button>
         </FormGroup>
       </Form>
       {error ? (
-          <Alert className="event-validation" color="danger">Missing required information</Alert>
-      ):""}
+        <Alert className="event-validation" color="danger">
+          Missing required information
+        </Alert>
+      ) : (
+        ""
+      )}
       {success ? (
-          <Alert className="event-validation" color="success">Event created successfully</Alert>
-      ):""}
+        <Alert className="event-validation" color="success">
+          Event created successfully
+        </Alert>
+      ) : (
+        ""
+      )}
     </Container>
   );
 };

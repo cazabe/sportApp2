@@ -20,7 +20,7 @@ module.exports = {
           price: parseFloat(price),
           thumbnail: filename,
           sport,
-          date: Date.now(),
+          date,
           user: user_id,
         });
         return res.json(event);
