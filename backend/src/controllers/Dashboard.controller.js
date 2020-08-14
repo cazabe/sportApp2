@@ -31,5 +31,19 @@ module.exports = {
         } catch (error) {
           res.status(400).json({ message: "There is not events" });
         }
+      },
+
+      async getEventsByUserId(req, res) {
+        const { user_id } = req.headers;
+        try {
+          const userEvents = await Events.find({user:user_id});
+          if (userEvents) {
+            return res.json(userEvents);
+          } else {
+            res.status(400).json({ message: "There is not events for tyour user " , user_id });
+          }
+        } catch (error) {
+          res.status(400).json({ message: "There is an error on the request" , error });
+        }
       }
 }

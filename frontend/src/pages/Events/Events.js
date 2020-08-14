@@ -64,6 +64,7 @@ const EventsPage = ({ history }) => {
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
+          history.push("/");
         }, 2000);
       } else {
         setError(true);
@@ -169,7 +170,7 @@ const EventsPage = ({ history }) => {
         </FormGroup>
         <FormGroup>
           <Button className="secondary-btn" onClick={() => history.push("/")}>
-            dashboard
+            Cancel
           </Button>
         </FormGroup>
       </Form>

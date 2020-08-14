@@ -2,13 +2,15 @@ import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 import moment from "moment";
 import "./Dashboard.css";
-import { Button, FormGroup, ButtonGroup } from "reactstrap";
+import { Button, FormGroup, ButtonGroup,Alert } from "reactstrap";
 
 const Dashboard = ({ history }) => {
   const [events, setEvents] = useState([]);
   const user_id = localStorage.getItem("user");
   const [cSelected, setCSelected] = useState([]);
   const [rSelected, setRSelected] = useState(null);
+  const [error, setError] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     getEvents();
@@ -25,11 +27,38 @@ const Dashboard = ({ history }) => {
     setEvents(response.data);
   };
 
+  const myEventsHandler = async () => {
+    setRSelected("myevents");
+    const response = await api.get('/users/myevents', { headers: { user_id } });
+    console.log("los eventos por ususraio: " , response.data);
+    setEvents(response.data);
+  };
+
+  const deleteEventsHandler = async(eventId)=>{
+    console.log("event id for delete : " , eventId);
+    try {
+       await api.delete(`/event/${eventId}`);
+
+      setSuccess(true);
+      setTimeout(()=>{
+        setSuccess(false);
+        filterHandler(null);
+      },2000)
+    } catch (error) {
+      setError(true);
+      setTimeout(()=>{
+        setError(false);
+      },2000)
+    }
+    
+      
+  }
+
   console.log(events);
 
   return (
     <>
-      <div>
+      <div className="filter-panel">
         Filter:
         <ButtonGroup>
           <Button
@@ -61,20 +90,40 @@ const Dashboard = ({ history }) => {
           >
             Swiming
           </Button>
+          <Button
+            color="primary"
+            onClick={myEventsHandler}
+            active={rSelected === "myevents"}
+          >
+            My events
+          </Button>
         </ButtonGroup>
+        <FormGroup>
+          <Button className="secondary" onClick={() => history.push("/events")}>
+            Event
+          </Button>
+        </FormGroup>
       </div>
-      <FormGroup>
-        <Button className="secondary" onClick={() => history.push("/events")}>
-          Event
-        </Button>
-      </FormGroup>
+
       <ul className="events-list">
         {events.map((event) => {
           return (
             <li key={event._id}>
               <header
                 style={{ backgroundImage: `url(${event.thumbnail_url})` }}
-              />
+              >
+                {event.user === user_id ? (
+                  <div className="delet-btn"><Button
+                    color="danger"
+                    onClick={()=> deleteEventsHandler(event._id)}
+                    active={rSelected === "myevents"}
+                  >
+                    Delete
+                  </Button></div>
+                ) : (
+                  ""
+                )}
+              </header>
               <strong>{event.title}</strong>
               <span>Event Date: {moment(event.date).format("l")}</span>
               <span>Event Price:{parseFloat(event.price).toFixed(2)}</span>
@@ -86,6 +135,20 @@ const Dashboard = ({ history }) => {
           );
         })}
       </ul>
+      {error ? (
+        <Alert className="event-validation" color="danger">
+         The event can't be deleted 
+        </Alert>
+      ) : (
+        ""
+      )}
+      {success ? (
+        <Alert className="event-validation" color="success">
+          Event deleted successfully
+        </Alert>
+      ) : (
+        ""
+      )}
     </>
   );
 };

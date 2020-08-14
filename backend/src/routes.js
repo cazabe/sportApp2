@@ -32,6 +32,7 @@ routes.get('/user/:userId' , UserController.getUserById);
 //Dashboard
 routes.get('/events/:sport' , DashboardController.getAllEvents);
 routes.get('/events' , DashboardController.getAllEvents);
+routes.get('/users/myevents' , DashboardController.getEventsByUserId);
 routes.get('/event/:event_id' , DashboardController.getEventById);
 
 //events
