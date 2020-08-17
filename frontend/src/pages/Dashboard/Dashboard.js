@@ -6,7 +6,8 @@ import { Button, FormGroup, ButtonGroup,Alert } from "reactstrap";
 
 const Dashboard = ({ history }) => {
   const [events, setEvents] = useState([]);
-  const user_id = localStorage.getItem("user");
+  const user = localStorage.getItem("user");
+  const user_id = localStorage.getItem("user_id");
   const [cSelected, setCSelected] = useState([]);
   const [rSelected, setRSelected] = useState(null);
   const [error, setError] = useState(false);
@@ -22,22 +23,32 @@ const Dashboard = ({ history }) => {
   };
 
   const getEvents = async (filter) => {
-    const url = filter ? `/events/${filter}` : "/events";
-    const response = await api.get(url, { headers: { user_id } });
-    setEvents(response.data);
+    try {
+      const url = filter ? `/events/${filter}` : "/events";
+      const response = await api.get(url, { headers: { user: user } });
+      setEvents(response.data.events);
+    } catch (error) {
+      history.push('/login');
+    }
+   
   };
 
   const myEventsHandler = async () => {
-    setRSelected("myevents");
-    const response = await api.get('/users/myevents', { headers: { user_id } });
-    console.log("los eventos por ususraio: " , response.data);
-    setEvents(response.data);
+    try {
+      setRSelected("myevents");
+    const response = await api.get('/users/myevents', { headers: { user: user } });
+    console.log("los eventos por ususraio: " , response.data.userEvents);
+    setEvents(response.data.userEvents);
+    } catch (error) {
+      history.push('/login');
+    }
+    
   };
 
   const deleteEventsHandler = async(eventId)=>{
     console.log("event id for delete : " , eventId);
     try {
-       await api.delete(`/event/${eventId}`);
+       await api.delete(`/event/${eventId}`,{ headers: { user: user } });
 
       setSuccess(true);
       setTimeout(()=>{

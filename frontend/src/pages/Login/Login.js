@@ -22,10 +22,12 @@ const Login = ({ history }) => {
 
     try {
       const response = await api.post("/login", { email, password });
-      const user_id = response.data._id || false;
+      const user_id = response.data.user_id || false;
+      const user = response.data.user || false;
 
       if (user_id) {
-        localStorage.setItem("user", user_id);
+        localStorage.setItem("user", user);
+        localStorage.setItem("user_id", user_id);
         history.push("/");
       } else {
         const { message } = response.data;

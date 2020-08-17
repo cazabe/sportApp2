@@ -17,10 +17,12 @@ const Register = ({history}) => {
         try {
           if(email !== "" && password !== "" && firstName !== "" && lastName !== "" ){
             const response = await api.post("/user/register" , {email,password,firstName,lastName});
-            const user_id = response.data._id || false
+            const user = response.data.user || false
+            const user_id = response.data.user_id || false
     
-            if(user_id){
-                localStorage.setItem('user' , user_id)
+            if(user){
+                localStorage.setItem('user' , user);
+                localStorage.setItem('user_id' , user_id);
                 history.push('/');
             }else{
                 const {message} = response.data;
