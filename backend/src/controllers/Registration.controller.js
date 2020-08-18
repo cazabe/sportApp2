@@ -1,32 +1,42 @@
 const express = require('express');
 const Registration = require('../models/Registration.model');
-
+const jwt = require("jsonwebtoken");
 
 module.exports = {
-    async createRegistration(req, res){
-        const {user_id} = req.headers;
-        const {eventId} = req.params;
-        const {date} = req.body;
+     createRegistration(req, res){
+        jwt.verify(req.token, "secret", async (err, authData) => {
+            if(err){
+                res.senStatus(401);
+            }else{
+                const user_id = authData.user._id;
+                const {eventId} = req.params;
+               
+        
+                try {
+                    const registration = await Registration.create({
+                        user:user_id,
+                        event:eventId,
+                        
+                    })
+            
+                    // use this to populate the complete document for event and use is like an inner join in relational database
+                    await registration
+                    .populate('event')
+                    .populate('user' , '-password')
+                    .execPopulate();
 
-        try {
-            const registration = await Registration.create({
-                user:user_id,
-                event:eventId,
-                date
-            })
-    
-            // use this to populate the complete document for event and use is like an inner join in relational database
-            await registration
-            .populate('event')
-            .populate('user' , '-password')
-            .execPopulate();
-    
-            return res.json(registration);
-        } catch (error) {
-            return res.status(400).json({message: "Problems with creating a registration"});
-        }
-       
-
+                    const ownerSocket = req.connectUsers[registration.event.user];
+                    if(ownerSocket){
+                        req.io.to(ownerSocket).emit('registration_request' ,registration);
+                    }
+            
+                    return res.json(registration);
+                } catch (error) {
+                    return res.status(400).json({message: "Problems with creating a registration"});
+                }        
+            }
+        })
+        
     },
 
     async getRegistration(req ,res){

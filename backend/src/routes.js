@@ -21,7 +21,7 @@ routes.get('/status' , (req,res)=>{
 })
 
 //Registration to an event with user id and event id and approve that registration
-routes.post('/registration/:eventId' , RegistrationController.createRegistration );
+routes.post('/registration/:eventId' ,verifyToken, RegistrationController.createRegistration );
 routes.get('/registration/:registration_id' , RegistrationController.getRegistration );
 routes.post('/registration/:resgistration_id/approval' , ApprovalController.approval);
 routes.post('/registration/:resgistration_id/rejection' , RejectionController.rejection);

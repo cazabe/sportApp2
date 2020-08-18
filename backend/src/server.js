@@ -1,9 +1,17 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const app = express();
 const routes = require('./routes');
 const path = require('path');
+const http = require('http');
+const socketio = require('socket.io');
+
+const app = express();
+//socket io
+const server = http.Server(app);
+const io = socketio(server);
+
+
 
 const PORT = process.env.PORT || 8000;
 
@@ -13,12 +21,7 @@ if(process.env.NODE_ENV !== 'production'){
 
 
 
-app.use(cors());
-app.use(express.json());
 
-app.use("/files" , express.static(path.resolve(__dirname, "..", "files")));
-//routes
-app.use(routes);
 
 
 //mongo conecction
@@ -31,7 +34,30 @@ try {
 } catch (error) {
     console.log(error);
 }
+
+
+
+const connectUsers = {};
+
+//conection socketio
+io.on('connection' , socket =>{
+    const {user} = socket.handshake.query;
+    connectUsers[user] = socket.id;  
+})
+
+//app.use()
+app.use((req,res,next) =>{
+    req.io = io;
+    req.connectUsers = connectUsers;
+    return next();
+})
+app.use(cors());
+app.use(express.json());
+app.use("/files" , express.static(path.resolve(__dirname, "..", "files")));
+//routes
+app.use(routes);
+
 //server
-app.listen(PORT , ()=>{
+server.listen(PORT , ()=>{
     console.log(`Listening on port ${PORT}`);
 })

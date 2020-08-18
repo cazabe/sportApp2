@@ -3,6 +3,7 @@ import api from "../../services/api";
 import moment from "moment";
 import "./Dashboard.css";
 import { Button, FormGroup, ButtonGroup,Alert } from "reactstrap";
+import socketio from 'socket.io-client';
 
 const Dashboard = ({ history }) => {
   const [events, setEvents] = useState([]);
@@ -12,10 +13,16 @@ const Dashboard = ({ history }) => {
   const [rSelected, setRSelected] = useState(null);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [messageHandler , setMessageHandler] = useState("");
 
   useEffect(() => {
     getEvents();
   }, []);
+
+  useEffect(()=>{
+    const socket = socketio('http://localhost:8000',{query:{user:user_id}});
+    socket.on('registration_request', data => console.log(data));
+  },[]);
 
   const filterHandler = (query) => {
     setRSelected(query);
@@ -51,18 +58,49 @@ const Dashboard = ({ history }) => {
        await api.delete(`/event/${eventId}`,{ headers: { user: user } });
 
       setSuccess(true);
+      setMessageHandler(" Event deleted successfully");
       setTimeout(()=>{
         setSuccess(false);
+        setMessageHandler("");
         filterHandler(null);
       },2000)
     } catch (error) {
       setError(true);
+      setMessageHandler("Could nort delete evvent");
       setTimeout(()=>{
         setError(false);
+        setMessageHandler("");
       },2000)
     }
     
       
+  }
+
+  const logOutHandler = ()=>{
+    localStorage.removeItem("user");
+    localStorage.removeItem("user_id");
+    history.push('/login');
+  }
+
+  const registrationRequestHandler = async (event)=>{
+    try {
+      await api.post(`/registration/${event.id}` , {}, {headers:{user}});
+      setSuccess(true);
+      setMessageHandler(`The request for the ${event.title} was successfully`);
+      setTimeout(()=>{
+        setSuccess(false);
+        setMessageHandler("");
+        filterHandler(null);
+      },2000)
+    } catch (error) {
+      setError(true);
+      setMessageHandler(`The request for the ${event.title} wasn't successfully`);
+      setTimeout(()=>{
+        setError(false);
+        setMessageHandler("");
+      },2000)
+    }
+    
   }
 
   console.log(events);
@@ -108,6 +146,12 @@ const Dashboard = ({ history }) => {
           >
             My events
           </Button>
+          <Button
+            color="danger"
+            onClick={logOutHandler}
+          >
+            Logout
+          </Button>
         </ButtonGroup>
         <FormGroup>
           <Button className="secondary" onClick={() => history.push("/events")}>
@@ -140,7 +184,7 @@ const Dashboard = ({ history }) => {
               <span>Event Price:{parseFloat(event.price).toFixed(2)}</span>
               <span>Event Description{event.description}</span>
               <FormGroup>
-                <Button className="primary">Subscribe</Button>
+                <Button className="primary" onClick={()=> registrationRequestHandler(event)}>Registration To Event</Button>
               </FormGroup>
             </li>
           );
@@ -155,7 +199,7 @@ const Dashboard = ({ history }) => {
       )}
       {success ? (
         <Alert className="event-validation" color="success">
-          Event deleted successfully
+         {messageHandler}
         </Alert>
       ) : (
         ""
