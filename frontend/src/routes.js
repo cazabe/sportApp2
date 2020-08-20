@@ -4,10 +4,12 @@ import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Register from './pages/Register/Register';
 import EventsPage from './pages/Events/Events';
+import TopNav from "./Components/TopNav";
 
 const Routes = () => {
     return(
   <Router>
+    <TopNav/>
     <Switch>
     <Route path="/" exact component={Dashboard}/>
       <Route path="/login" exact component={Login}/>

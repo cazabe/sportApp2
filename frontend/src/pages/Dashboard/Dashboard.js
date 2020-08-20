@@ -1,9 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import api from "../../services/api";
 import moment from "moment";
 import "./Dashboard.css";
-import { Button, FormGroup, ButtonGroup,Alert } from "reactstrap";
-import socketio from 'socket.io-client';
+import {
+  Button,
+  FormGroup,
+  ButtonGroup,
+  Alert,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+} from "reactstrap";
+import socketio from "socket.io-client";
 
 const Dashboard = ({ history }) => {
   const [events, setEvents] = useState([]);
@@ -13,16 +22,26 @@ const Dashboard = ({ history }) => {
   const [rSelected, setRSelected] = useState(null);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [messageHandler , setMessageHandler] = useState("");
+  const [messageHandler, setMessageHandler] = useState("");
+  const [eventsRequest, setEventsRequest] = useState([]);
+  const [dropDownOpen, setDropDownOpen] = useState(false);
+
+  const toggle = () => setDropDownOpen(!dropDownOpen);
 
   useEffect(() => {
     getEvents();
   }, []);
 
-  useEffect(()=>{
-    const socket = socketio('http://localhost:8000',{query:{user:user_id}});
-    socket.on('registration_request', data => console.log(data));
-  },[]);
+  const socket = useMemo(
+    () => socketio("http://localhost:8000", { query: { user: user_id } }),
+    [user_id]
+  );
+
+  useEffect(() => {
+    socket.on("registration_request", (data) =>
+      setEventsRequest([...eventsRequest, data])
+    );
+  }, [eventsRequest, socket]);
 
   const filterHandler = (query) => {
     setRSelected(query);
@@ -35,124 +54,133 @@ const Dashboard = ({ history }) => {
       const response = await api.get(url, { headers: { user: user } });
       setEvents(response.data.events);
     } catch (error) {
-      history.push('/login');
+      history.push("/login");
     }
-   
   };
 
   const myEventsHandler = async () => {
     try {
       setRSelected("myevents");
-    const response = await api.get('/users/myevents', { headers: { user: user } });
-    console.log("los eventos por ususraio: " , response.data.userEvents);
-    setEvents(response.data.userEvents);
+      const response = await api.get("/users/myevents", {
+        headers: { user: user },
+      });
+      console.log("los eventos por ususraio: ", response.data.userEvents);
+      setEvents(response.data.userEvents);
     } catch (error) {
-      history.push('/login');
+      history.push("/login");
     }
-    
   };
 
-  const deleteEventsHandler = async(eventId)=>{
-    console.log("event id for delete : " , eventId);
+  const deleteEventsHandler = async (eventId) => {
+    console.log("event id for delete : ", eventId);
     try {
-       await api.delete(`/event/${eventId}`,{ headers: { user: user } });
+      await api.delete(`/event/${eventId}`, { headers: { user: user } });
 
       setSuccess(true);
       setMessageHandler(" Event deleted successfully");
-      setTimeout(()=>{
+      setTimeout(() => {
         setSuccess(false);
         setMessageHandler("");
         filterHandler(null);
-      },2000)
+      }, 2000);
     } catch (error) {
       setError(true);
       setMessageHandler("Could nort delete evvent");
-      setTimeout(()=>{
+      setTimeout(() => {
         setError(false);
         setMessageHandler("");
-      },2000)
+      }, 2000);
     }
-    
-      
-  }
+  };
 
-  const logOutHandler = ()=>{
-    localStorage.removeItem("user");
-    localStorage.removeItem("user_id");
-    history.push('/login');
-  }
-
-  const registrationRequestHandler = async (event)=>{
+  const registrationRequestHandler = async (event) => {
     try {
-      await api.post(`/registration/${event.id}` , {}, {headers:{user}});
+      await api.post(`/registration/${event.id}`, {}, { headers: { user } });
       setSuccess(true);
       setMessageHandler(`The request for the ${event.title} was successfully`);
-      setTimeout(()=>{
+      setTimeout(() => {
         setSuccess(false);
         setMessageHandler("");
         filterHandler(null);
-      },2000)
+      }, 2000);
     } catch (error) {
       setError(true);
-      setMessageHandler(`The request for the ${event.title} wasn't successfully`);
-      setTimeout(()=>{
+      setMessageHandler(
+        `The request for the ${event.title} wasn't successfully`
+      );
+      setTimeout(() => {
         setError(false);
         setMessageHandler("");
-      },2000)
+      }, 2000);
     }
-    
-  }
+  };
 
   console.log(events);
 
   return (
     <>
+      <ul className="notification">
+        {eventsRequest.map((request) => {
+          return (
+            <li key={request._id}>
+              <div>
+                <strong>{request.user.email}</strong>Is requesting to register
+                to your event
+                <strong>{request.event.title}</strong>
+              </div>
+              <ButtonGroup>
+                <Button className="secondary" onClick={() => {}}>
+                  Accept
+                </Button>
+                <Button className="secondary" onClick={() => {}}>
+                  Cancel
+                </Button>
+              </ButtonGroup>
+            </li>
+          );
+        })}
+      </ul>
       <div className="filter-panel">
-        Filter:
-        <ButtonGroup>
-          <Button
-            color="primary"
-            onClick={() => filterHandler(null)}
-            active={rSelected === null}
-          >
-            All events
-          </Button>
+        <Dropdown isOpen={dropDownOpen} toggle={toggle}>
+          <DropdownToggle color="primary" caret>
+            Filter
+          </DropdownToggle>
+          <DropdownMenu>
+            <DropdownItem
+              onClick={() => filterHandler(null)}
+              active={rSelected === null}
+            >
+              All Sports
+            </DropdownItem>
+            <DropdownItem
+              onClick={myEventsHandler}
+              active={rSelected === "myevents"}
+            >
+              My Events
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => filterHandler("running")}
+              active={rSelected === "running"}
+            >
+              Running
+            </DropdownItem>
 
-          <Button
-            color="primary"
-            onClick={() => filterHandler("running")}
-            active={rSelected === "running"}
-          >
-            Running
-          </Button>
-          <Button
-            color="primary"
-            onClick={() => filterHandler("cycling")}
-            active={rSelected === "cycling"}
-          >
-            Cycling
-          </Button>
-          <Button
-            color="primary"
-            onClick={() => filterHandler("swiming")}
-            active={rSelected === "swiming"}
-          >
-            Swiming
-          </Button>
-          <Button
-            color="primary"
-            onClick={myEventsHandler}
-            active={rSelected === "myevents"}
-          >
-            My events
-          </Button>
-          <Button
-            color="danger"
-            onClick={logOutHandler}
-          >
-            Logout
-          </Button>
-        </ButtonGroup>
+            <DropdownItem
+              onClick={() => filterHandler("cycling")}
+              active={rSelected === "cycling"}
+            >
+              Cycling
+            </DropdownItem>
+
+            <DropdownItem
+              onClick={() => filterHandler("swiming")}
+              active={rSelected === "swiming"}
+            >
+              Swiming
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+       
         <FormGroup>
           <Button className="secondary" onClick={() => history.push("/events")}>
             Event
@@ -168,13 +196,15 @@ const Dashboard = ({ history }) => {
                 style={{ backgroundImage: `url(${event.thumbnail_url})` }}
               >
                 {event.user === user_id ? (
-                  <div className="delet-btn"><Button
-                    color="danger"
-                    onClick={()=> deleteEventsHandler(event._id)}
-                    active={rSelected === "myevents"}
-                  >
-                    Delete
-                  </Button></div>
+                  <div className="delet-btn">
+                    <Button
+                      color="danger"
+                      onClick={() => deleteEventsHandler(event._id)}
+                      active={rSelected === "myevents"}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 ) : (
                   ""
                 )}
@@ -184,7 +214,12 @@ const Dashboard = ({ history }) => {
               <span>Event Price:{parseFloat(event.price).toFixed(2)}</span>
               <span>Event Description{event.description}</span>
               <FormGroup>
-                <Button className="primary" onClick={()=> registrationRequestHandler(event)}>Registration To Event</Button>
+                <Button
+                  className="primary"
+                  onClick={() => registrationRequestHandler(event)}
+                >
+                  Registration To Event
+                </Button>
               </FormGroup>
             </li>
           );
@@ -192,14 +227,14 @@ const Dashboard = ({ history }) => {
       </ul>
       {error ? (
         <Alert className="event-validation" color="danger">
-         The event can't be deleted 
+          The event can't be deleted
         </Alert>
       ) : (
         ""
       )}
       {success ? (
         <Alert className="event-validation" color="success">
-         {messageHandler}
+          {messageHandler}
         </Alert>
       ) : (
         ""

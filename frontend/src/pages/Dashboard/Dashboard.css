@@ -44,3 +44,15 @@ ul.events-list header .delet-btn{
         grid-template-columns: 1fr;
     }
 }
+
+
+ul.notification {
+    list-style: none;
+    margin-bottom: 16px;
+    display: flex;
+}
+
+ul.notification li{
+    font-size: 16px;
+    line-height: 24px;
+}
