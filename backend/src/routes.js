@@ -23,8 +23,8 @@ routes.get('/status' , (req,res)=>{
 //Registration to an event with user id and event id and approve that registration
 routes.post('/registration/:eventId' ,verifyToken, RegistrationController.createRegistration );
 routes.get('/registration/:registration_id' , RegistrationController.getRegistration );
-routes.post('/registration/:resgistration_id/approval' , ApprovalController.approval);
-routes.post('/registration/:resgistration_id/rejection' , RejectionController.rejection);
+routes.post('/registration/:resgistration_id/approval' ,verifyToken, ApprovalController.approval);
+routes.post('/registration/:resgistration_id/rejection' ,verifyToken, RejectionController.rejection);
 
 //user
 routes.post('/user/register' , UserController.createUser);

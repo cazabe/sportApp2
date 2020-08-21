@@ -25,6 +25,8 @@ const Dashboard = ({ history }) => {
   const [messageHandler, setMessageHandler] = useState("");
   const [eventsRequest, setEventsRequest] = useState([]);
   const [dropDownOpen, setDropDownOpen] = useState(false);
+  const [eventsRequestMessage, setEventsRequestMessage] = useState("");
+  const [eventsRequestSuccess, seteventsRequestSuccess] = useState(false);
 
   const toggle = () => setDropDownOpen(!dropDownOpen);
 
@@ -115,7 +117,53 @@ const Dashboard = ({ history }) => {
     }
   };
 
+  const acceptEventHandler = async (eventId) => {
+    try {
+     await api.post(
+        `/registration/${eventId}/approval`,
+        {},
+        { headers: { user } }
+      );
+     
+      seteventsRequestSuccess(true)
+      setEventsRequestMessage('Event approved successfully');
+      setTimeout(()=>{
+        seteventsRequestSuccess(false);
+        setEventsRequestMessage('');
+      })
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const rejectEventHandler = async (eventId) => {
+    try {
+     await api.post(
+        `/registration/${eventId}/rejection`,
+        {},
+        { headers: { user } }
+      );
+     
+      seteventsRequestSuccess(true)
+      setEventsRequestMessage('Event rejected');
+      removeNotificationFromDashboard(eventId);
+      setTimeout(()=>{
+        seteventsRequestSuccess(false);
+        setEventsRequestMessage('');
+      })
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   console.log(events);
+
+  const removeNotificationFromDashboard = (eventId) =>{
+const newEvents = eventsRequest.filter((event) => event._id !== eventId);
+setEventsRequest(newEvents);
+  }
 
   return (
     <>
@@ -129,17 +177,27 @@ const Dashboard = ({ history }) => {
                 <strong>{request.event.title}</strong>
               </div>
               <ButtonGroup>
-                <Button className="secondary" onClick={() => {}}>
+                <Button
+                  className="secondary"
+                  onClick={() => acceptEventHandler(request._id)}
+                >
                   Accept
                 </Button>
-                <Button className="secondary" onClick={() => {}}>
-                  Cancel
+                <Button className="secondary" onClick={() => rejectEventHandler(request._id)}>
+                  Reject
                 </Button>
               </ButtonGroup>
             </li>
           );
         })}
       </ul>
+      {eventsRequestSuccess ? (
+                <Alert className="event-validation" color="success">
+                  {eventsRequestMessage}
+                </Alert>
+              ) : (
+                ""
+              )}
       <div className="filter-panel">
         <Dropdown isOpen={dropDownOpen} toggle={toggle}>
           <DropdownToggle color="primary" caret>
@@ -180,7 +238,7 @@ const Dashboard = ({ history }) => {
             </DropdownItem>
           </DropdownMenu>
         </Dropdown>
-       
+
         <FormGroup>
           <Button className="secondary" onClick={() => history.push("/events")}>
             Event
