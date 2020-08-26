@@ -36,6 +36,9 @@ const TopNav = () => {
             <NavItem>
               <Link to="/">Dashboard</Link>
             </NavItem>
+            <NavItem>
+              <Link to="/myregistration">My Reagistration</Link>
+            </NavItem>
           </Nav>
         </Collapse>
       </Navbar>

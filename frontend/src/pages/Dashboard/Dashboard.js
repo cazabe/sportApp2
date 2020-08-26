@@ -119,19 +119,18 @@ const Dashboard = ({ history }) => {
 
   const acceptEventHandler = async (eventId) => {
     try {
-     await api.post(
+      await api.post(
         `/registration/${eventId}/approval`,
         {},
         { headers: { user } }
       );
-     
-      seteventsRequestSuccess(true)
-      setEventsRequestMessage('Event approved successfully');
-      setTimeout(()=>{
-        seteventsRequestSuccess(false);
-        setEventsRequestMessage('');
-      })
 
+      seteventsRequestSuccess(true);
+      setEventsRequestMessage("Event approved successfully");
+      setTimeout(() => {
+        seteventsRequestSuccess(false);
+        setEventsRequestMessage("");
+      });
     } catch (error) {
       console.log(error);
     }
@@ -139,20 +138,19 @@ const Dashboard = ({ history }) => {
 
   const rejectEventHandler = async (eventId) => {
     try {
-     await api.post(
+      await api.post(
         `/registration/${eventId}/rejection`,
         {},
         { headers: { user } }
       );
-     
-      seteventsRequestSuccess(true)
-      setEventsRequestMessage('Event rejected');
-      removeNotificationFromDashboard(eventId);
-      setTimeout(()=>{
-        seteventsRequestSuccess(false);
-        setEventsRequestMessage('');
-      })
 
+      seteventsRequestSuccess(true);
+      setEventsRequestMessage("Event rejected");
+      removeNotificationFromDashboard(eventId);
+      setTimeout(() => {
+        seteventsRequestSuccess(false);
+        setEventsRequestMessage("");
+      });
     } catch (error) {
       console.log(error);
     }
@@ -160,10 +158,10 @@ const Dashboard = ({ history }) => {
 
   console.log(events);
 
-  const removeNotificationFromDashboard = (eventId) =>{
-const newEvents = eventsRequest.filter((event) => event._id !== eventId);
-setEventsRequest(newEvents);
-  }
+  const removeNotificationFromDashboard = (eventId) => {
+    const newEvents = eventsRequest.filter((event) => event._id !== eventId);
+    setEventsRequest(newEvents);
+  };
 
   return (
     <>
@@ -183,7 +181,10 @@ setEventsRequest(newEvents);
                 >
                   Accept
                 </Button>
-                <Button className="secondary" onClick={() => rejectEventHandler(request._id)}>
+                <Button
+                  className="secondary"
+                  onClick={() => rejectEventHandler(request._id)}
+                >
                   Reject
                 </Button>
               </ButtonGroup>
@@ -192,12 +193,12 @@ setEventsRequest(newEvents);
         })}
       </ul>
       {eventsRequestSuccess ? (
-                <Alert className="event-validation" color="success">
-                  {eventsRequestMessage}
-                </Alert>
-              ) : (
-                ""
-              )}
+        <Alert className="event-validation" color="success">
+          {eventsRequestMessage}
+        </Alert>
+      ) : (
+        ""
+      )}
       <div className="filter-panel">
         <Dropdown isOpen={dropDownOpen} toggle={toggle}>
           <DropdownToggle color="primary" caret>
